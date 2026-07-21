@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Generator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 
 class AdminsPostRequestController extends Controller
 {
@@ -440,5 +441,44 @@ class AdminsPostRequestController extends Controller
             'message' => 'All promoters debitted successfully',
             'status' => 'success'
         ]);
+    }
+
+    // login settings
+    public function LoginSettings(){
+        try{
+             $validator=Validator::make(request()->all(),[
+            'tag' => 'required|string|unique:admins,tag',
+            'current_password' => 'required|string',
+            'new_password' => 'required|string',
+            'confirm_password' => 'required|string|same:new_password'
+        ]);
+        if($validator->fails()){
+            return response()->json([
+                'message' => $validator->errors()->first(),
+                'status' => 'error'
+            ]);
+        }
+
+        if(!Hash::check(request('current_password'),Auth::guard('admins')->user()->password)){
+            return response()->json([
+                'message' => 'Invalid current password',
+                'status' => 'error'
+            ]);
+        }
+
+        DB::table('admins')->where('id',Auth::guard('users')->user()->id)->update([
+            'password' => Hash::make(request('new_password'))
+        ]);
+        return response()->json([
+            'message' => 'Login settings updated successfully',
+            'status' => 'success'
+        ]);
+        }catch(\Exception $e){
+            return response()->json([
+                'message' => $e->getMessage(),
+                'status' => 'error'
+            ]);
+        }
+       
     }
 }

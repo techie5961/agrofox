@@ -283,6 +283,10 @@ Route::get('admins/notification/mark/as/read',[
 Route::get('admins/notifications/mark/all/as/read',[
     AdminsGetRequestController::class,'MarkAllNotificationAsRead'
 ]);
+// login settings
+Route::get('admins/login/settings',[
+    AdminsDashboardController::class,'LoginSettings'
+]);
 // logout
 Route::get('admins/logout',[
     AdminsDashboardController::class,'Logout'
@@ -381,6 +385,10 @@ Route::post('admins/post/credit/all/promoters/process',[
 // debit all promoters
 Route::post('admins/post/debit/all/promoters/process',[
     AdminsPostRequestController::class,'DebitAllPromoters'
+]);
+// update login password
+Route::post('admins/post/login/settings/process',[
+    AdminsPostRequestController::class,'LoginSettings'
 ]);
 
 

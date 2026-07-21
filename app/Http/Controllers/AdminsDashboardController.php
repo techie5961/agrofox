@@ -300,4 +300,9 @@ class AdminsDashboardController extends Controller
         DB::table('purchased_packages')->where('id',request('id'))->delete();
         return redirect(url()->previous());
     }
+
+    // login settings
+    public function LoginSettings(){
+        return view('admins.loginsettings');
+    }
 }
