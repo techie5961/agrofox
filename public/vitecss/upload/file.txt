@@ -1,0 +1,732 @@
+<?php
+/**
+ * NekPayment - Complete Integration Single File (FIXED - Amount Range)
+ * This file handles: Payment initiation, async notification, and success page
+ */
+
+// ============================================
+// CONFIGURATION
+// ============================================
+define('MERCHANT_ID', '999300111');  // Test merchant ID
+define('PAY_TYPE', '520');            // Test pay type
+define('SECRET_KEY', 'e8a4cdd0ccdb4d2b9ca6212453c5e40c'); // Test secret key
+define('API_URL', 'https://api.nekpayment.com/pay/web');
+
+// ============================================
+// AMOUNT LIMITS FOR TEST MERCHANT
+// ============================================
+define('MIN_AMOUNT', 500);   // Minimum amount in Naira
+define('MAX_AMOUNT', 10000); // Maximum amount in Naira
+
+// ============================================
+// USE LOCAL IP ADDRESS
+// ============================================
+define('BASE_URL', 'http://172.20.10.1');
+
+// ============================================
+// NEKPAYMENT CLASS
+// ============================================
+class NekPayment
+{
+    private $merchantId;
+    private $payType;
+    private $secretKey;
+    private $apiUrl;
+    
+    public function __construct($merchantId, $payType, $secretKey, $apiUrl = API_URL)
+    {
+        $this->merchantId = $merchantId;
+        $this->payType = $payType;
+        $this->secretKey = $secretKey;
+        $this->apiUrl = $apiUrl;
+    }
+    
+    private function generateSignature($params)
+    {
+        unset($params['sign']);
+        unset($params['sign_type']);
+        
+        ksort($params);
+        
+        $signStr = '';
+        foreach ($params as $key => $value) {
+            if ($value !== '' && $value !== null) {
+                $signStr .= $key . '=' . $value . '&';
+            }
+        }
+        $signStr = rtrim($signStr, '&');
+        $signStr .= '&key=' . $this->secretKey;
+        
+        $signature = md5($signStr);
+        
+        // Log for debugging
+        $this->logSignature($signStr, $signature);
+        
+        return $signature;
+    }
+    
+    private function logSignature($signStr, $signature)
+    {
+        $log = date('Y-m-d H:i:s') . " - Signature Debug:\n";
+        $log .= "Signature String: " . $signStr . "\n";
+        $log .= "Signature: " . $signature . "\n";
+        $log .= str_repeat('-', 80) . "\n";
+        file_put_contents('signature_debug.log', $log, FILE_APPEND);
+    }
+    
+    public function createPayment($orderData)
+    {
+        $params = [
+            'goods_name' => $orderData['goods_name'],
+            'mch_id' => $this->merchantId,
+            'mch_order_no' => $orderData['mch_order_no'],
+            'mch_return_msg' => isset($orderData['mch_return_msg']) ? $orderData['mch_return_msg'] : '',
+            'notify_url' => $orderData['notify_url'],
+            'order_date' => date('Y-m-d H:i:s'),
+            'page_url' => isset($orderData['page_url']) ? $orderData['page_url'] : '',
+            'pay_type' => $this->payType,
+            'trade_amount' => number_format($orderData['trade_amount'], 2, '.', ''),
+            'version' => '1.0'
+        ];
+        
+        $params = array_filter($params, function($value) {
+            return $value !== '' && $value !== null;
+        });
+        
+        $params['sign'] = $this->generateSignature($params);
+        $params['sign_type'] = 'MD5';
+        
+        $this->logRequest($params);
+        
+        return $this->sendRequest($params);
+    }
+    
+    private function sendRequest($params)
+    {
+        $postData = http_build_query($params);
+        
+        $log = date('Y-m-d H:i:s') . " - POST Data:\n";
+        $log .= $postData . "\n";
+        $log .= str_repeat('-', 80) . "\n";
+        file_put_contents('post_data.log', $log, FILE_APPEND);
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->apiUrl);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/x-www-form-urlencoded'
+        ]);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($error) {
+            return ['success' => false, 'error' => 'CURL Error: ' . $error];
+        }
+        
+        $data = json_decode($response, true);
+        
+        if ($data === null) {
+            return ['success' => false, 'error' => 'Invalid JSON response: ' . $response];
+        }
+        
+        return [
+            'success' => ($data['respCode'] ?? '') === 'SUCCESS',
+            'data' => $data
+        ];
+    }
+    
+    private function logRequest($params)
+    {
+        $log = date('Y-m-d H:i:s') . " - Payment Request:\n";
+        $log .= print_r($params, true) . "\n";
+        $log .= str_repeat('-', 80) . "\n";
+        file_put_contents('payment_requests.log', $log, FILE_APPEND);
+    }
+    
+    public function verifyAsyncNotification($params)
+    {
+        $sign = $params['sign'] ?? '';
+        unset($params['sign']);
+        unset($params['signType']);
+        
+        ksort($params);
+        
+        $signStr = '';
+        foreach ($params as $key => $value) {
+            if ($value !== '' && $value !== null) {
+                $signStr .= $key . '=' . $value . '&';
+            }
+        }
+        $signStr = rtrim($signStr, '&');
+        $signStr .= '&key=' . $this->secretKey;
+        
+        $expectedSign = md5($signStr);
+        
+        $log = date('Y-m-d H:i:s') . " - Async Verification:\n";
+        $log .= "Sign String: " . $signStr . "\n";
+        $log .= "Received Sign: " . $sign . "\n";
+        $log .= "Expected Sign: " . $expectedSign . "\n";
+        $log .= "Match: " . (strtoupper($sign) === strtoupper($expectedSign) ? 'YES' : 'NO') . "\n";
+        $log .= str_repeat('-', 80) . "\n";
+        file_put_contents('async_verify.log', $log, FILE_APPEND);
+        
+        return strtoupper($sign) === strtoupper($expectedSign);
+    }
+}
+
+// ============================================
+// DATABASE SIMULATION
+// ============================================
+function saveOrder($orderNo, $data)
+{
+    $file = 'orders.json';
+    $orders = file_exists($file) ? json_decode(file_get_contents($file), true) : [];
+    $orders[$orderNo] = $data;
+    file_put_contents($file, json_encode($orders, JSON_PRETTY_PRINT));
+}
+
+function getOrder($orderNo)
+{
+    $file = 'orders.json';
+    if (!file_exists($file)) return null;
+    $orders = json_decode(file_get_contents($file), true);
+    return $orders[$orderNo] ?? null;
+}
+
+function updateOrderStatus($orderNo, $status, $platformOrderNo = null, $amount = null)
+{
+    $file = 'orders.json';
+    if (!file_exists($file)) return false;
+    $orders = json_decode(file_get_contents($file), true);
+    
+    if (isset($orders[$orderNo])) {
+        $orders[$orderNo]['status'] = $status;
+        $orders[$orderNo]['updated_at'] = date('Y-m-d H:i:s');
+        if ($platformOrderNo) $orders[$orderNo]['platform_order_no'] = $platformOrderNo;
+        if ($amount) $orders[$orderNo]['paid_amount'] = $amount;
+        file_put_contents($file, json_encode($orders, JSON_PRETTY_PRINT));
+        return true;
+    }
+    return false;
+}
+
+function logPayment($message, $data = null)
+{
+    $log = date('Y-m-d H:i:s') . ' - ' . $message . "\n";
+    if ($data) $log .= print_r($data, true) . "\n";
+    $log .= str_repeat('-', 80) . "\n";
+    file_put_contents('payment.log', $log, FILE_APPEND);
+}
+
+// ============================================
+// GET CURRENT URL
+// ============================================
+function getCurrentUrl($action = null, $params = [])
+{
+    $baseUrl = rtrim(BASE_URL, '/');
+    $script = '/' . basename($_SERVER['PHP_SELF']);
+    
+    $url = $baseUrl . $script;
+    
+    $queryParams = [];
+    if ($action) {
+        $queryParams['action'] = $action;
+    }
+    $queryParams = array_merge($queryParams, $params);
+    
+    if (!empty($queryParams)) {
+        $url .= '?' . http_build_query($queryParams);
+    }
+    
+    return $url;
+}
+
+// ============================================
+// VALIDATE AMOUNT
+// ============================================
+function validateAmount($amount)
+{
+    if ($amount < MIN_AMOUNT) {
+        return "Amount must be at least ₦" . number_format(MIN_AMOUNT, 2);
+    }
+    if ($amount > MAX_AMOUNT) {
+        return "Amount cannot exceed ₦" . number_format(MAX_AMOUNT, 2);
+    }
+    return true;
+}
+
+// ============================================
+// ROUTING
+// ============================================
+$action = $_GET['action'] ?? 'pay';
+
+// Initialize payment class
+$payment = new NekPayment(MERCHANT_ID, PAY_TYPE, SECRET_KEY);
+
+// ============================================
+// ACTION: Pay - Initiate Payment
+// ============================================
+if ($action === 'pay') {
+    // Get form data if posted
+    $amount = isset($_POST['amount']) ? floatval($_POST['amount']) : MIN_AMOUNT;
+    $product = isset($_POST['product']) ? trim($_POST['product']) : 'Test Product';
+    $mchReturnMsg = isset($_POST['mch_return_msg']) ? trim($_POST['mch_return_msg']) : 'order_' . date('YmdHis');
+    
+    // Validate amount
+    $amountValidation = validateAmount($amount);
+    if ($amountValidation !== true) {
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Amount Error</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+                .error-box { background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 5px; }
+                .btn { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="error-box">
+                <h2>❌ Amount Error</h2>
+                <p><?php echo $amountValidation; ?></p>
+                <p><a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn">Go Back</a></p>
+            </div>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+    
+    // Generate unique order number
+    $orderNo = 'ORD_' . date('YmdHis') . '_' . rand(1000, 9999);
+    
+    // Get full URLs
+    $notifyUrl = getCurrentUrl('notify');
+    $pageUrl = getCurrentUrl('success', ['order' => $orderNo]);
+    
+    // Prepare order data
+    $orderData = [
+        'mch_order_no' => $orderNo,
+        'trade_amount' => $amount,
+        'goods_name' => $product,
+        'notify_url' => $notifyUrl,
+        'page_url' => $pageUrl,
+        'mch_return_msg' => $mchReturnMsg
+    ];
+    
+    logPayment('Creating payment for order: ' . $orderNo, $orderData);
+    
+    // Save order to database
+    saveOrder($orderNo, [
+        'order_no' => $orderNo,
+        'amount' => $amount,
+        'goods_name' => $product,
+        'status' => 'pending',
+        'created_at' => date('Y-m-d H:i:s'),
+        'notify_url' => $notifyUrl,
+        'page_url' => $pageUrl,
+        'mch_return_msg' => $mchReturnMsg
+    ]);
+    
+    // Create payment
+    $result = $payment->createPayment($orderData);
+    
+    if ($result['success']) {
+        logPayment('Payment created successfully for order: ' . $orderNo, $result['data']);
+        
+        // Save platform order ID
+        updateOrderStatus($orderNo, 'redirected', $result['data']['orderNo']);
+        
+        // Redirect to payment page
+        header('Location: ' . $result['data']['payInfo']);
+        exit;
+    } else {
+        logPayment('Payment creation failed for order: ' . $orderNo, $result);
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Payment Error</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 900px; margin: 50px auto; padding: 20px; }
+                .error-box { background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 5px; }
+                .info { background: #e2e3e5; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                .btn { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+                pre { background: #f5f5f5; padding: 15px; overflow: auto; border-radius: 5px; }
+                .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <h1>Payment Creation Failed</h1>
+            
+            <div class="error-box">
+                <p><strong>Order:</strong> <?php echo htmlspecialchars($orderNo); ?></p>
+                <p><strong>Error:</strong> <?php echo htmlspecialchars($result['data']['tradeMsg'] ?? $result['error'] ?? 'Unknown error'); ?></p>
+            </div>
+            
+            <?php if (strpos($result['data']['tradeMsg'] ?? '', 'LIMIT') !== false): ?>
+            <div class="warning">
+                <strong>⚠️ Amount Limit Error:</strong><br>
+                <?php echo $result['data']['tradeMsg']; ?><br><br>
+                <strong>Allowed Amount Range:</strong> ₦<?php echo number_format(MIN_AMOUNT, 2); ?> - ₦<?php echo number_format(MAX_AMOUNT, 2); ?>
+            </div>
+            <?php endif; ?>
+            
+            <div class="info">
+                <h3>URLs Used:</h3>
+                <p><strong>Notify URL:</strong> <?php echo htmlspecialchars($notifyUrl); ?></p>
+                <p><strong>Page URL:</strong> <?php echo htmlspecialchars($pageUrl); ?></p>
+                <p><strong>BASE_URL:</strong> <?php echo htmlspecialchars(BASE_URL); ?></p>
+                <p><strong>mch_return_msg:</strong> <?php echo htmlspecialchars($orderData['mch_return_msg']); ?></p>
+                <p><strong>Amount:</strong> ₦<?php echo number_format($orderData['trade_amount'], 2); ?></p>
+            </div>
+            
+            <p><a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn">Try Again</a></p>
+            
+            <h4>Response Data:</h4>
+            <pre><?php print_r($result['data'] ?? []); ?></pre>
+            
+            <h4>Order Data Sent:</h4>
+            <pre><?php print_r($orderData); ?></pre>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
+}
+
+// ============================================
+// ACTION: Notify - Async Notification Handler
+// ============================================
+if ($action === 'notify') {
+    $postData = $_POST;
+    
+    logPayment('Received async notification', $postData);
+    
+    if (!$payment->verifyAsyncNotification($postData)) {
+        logPayment('Signature verification FAILED', $postData);
+        http_response_code(400);
+        exit('Signature verification failed');
+    }
+    
+    if (($postData['tradeResult'] ?? '') === '1') {
+        $mchOrderNo = $postData['mchOrderNo'];
+        $platformOrderNo = $postData['orderNo'];
+        $amount = $postData['amount'];
+        
+        logPayment("Payment SUCCESS for order: {$mchOrderNo}", $postData);
+        
+        $updated = updateOrderStatus($mchOrderNo, 'paid', $platformOrderNo, $amount);
+        
+        if ($updated) {
+            logPayment("Order {$mchOrderNo} updated to PAID status");
+        } else {
+            logPayment("WARNING: Order {$mchOrderNo} not found in database");
+        }
+    } else {
+        logPayment("Payment FAILED for order: " . ($postData['mchOrderNo'] ?? 'unknown'), $postData);
+        updateOrderStatus($postData['mchOrderNo'] ?? '', 'failed');
+    }
+    
+    echo 'success';
+    exit;
+}
+
+// ============================================
+// ACTION: Success - Frontend Success Page
+// ============================================
+if ($action === 'success') {
+    $orderNo = $_GET['order'] ?? '';
+    $order = $orderNo ? getOrder($orderNo) : null;
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Payment Status</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+            .success-box { background: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 5px; }
+            .pending-box { background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 5px; }
+            .error-box { background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 5px; }
+            .info { background: #e2e3e5; padding: 15px; border-radius: 5px; margin: 15px 0; }
+            .btn { display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        </style>
+    </head>
+    <body>
+        <h1>Payment Status</h1>
+        
+        <?php if ($order): ?>
+            <div class="info">
+                <p><strong>Order Number:</strong> <?php echo htmlspecialchars($orderNo); ?></p>
+                <p><strong>Amount:</strong> ₦<?php echo number_format($order['amount'] ?? 0, 2); ?></p>
+                <p><strong>Status:</strong> <?php echo ucfirst($order['status'] ?? 'unknown'); ?></p>
+                <p><strong>Created:</strong> <?php echo htmlspecialchars($order['created_at'] ?? ''); ?></p>
+                <?php if (isset($order['paid_amount'])): ?>
+                    <p><strong>Paid Amount:</strong> ₦<?php echo number_format($order['paid_amount'], 2); ?></p>
+                <?php endif; ?>
+                <?php if (isset($order['platform_order_no'])): ?>
+                    <p><strong>Platform Order:</strong> <?php echo htmlspecialchars($order['platform_order_no']); ?></p>
+                <?php endif; ?>
+            </div>
+            
+            <?php if (($order['status'] ?? '') === 'paid'): ?>
+                <div class="success-box">
+                    <h2>✅ Payment Successful!</h2>
+                    <p>Your payment has been confirmed. Thank you for your purchase.</p>
+                </div>
+            <?php elseif (($order['status'] ?? '') === 'pending' || ($order['status'] ?? '') === 'redirected'): ?>
+                <div class="pending-box">
+                    <h2>⏳ Payment Pending</h2>
+                    <p>Your payment is being processed. Please wait for confirmation.</p>
+                    <p>The page will refresh automatically in 10 seconds.</p>
+                    <script>
+                        setTimeout(function() {
+                            location.reload();
+                        }, 10000);
+                    </script>
+                </div>
+            <?php else: ?>
+                <div class="error-box">
+                    <h2>❌ Payment Failed</h2>
+                    <p>There was an issue with your payment. Please try again.</p>
+                    <p><a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn">Try Again</a></p>
+                </div>
+            <?php endif; ?>
+            
+        <?php else: ?>
+            <div class="error-box">
+                <h2>Order Not Found</h2>
+                <p><a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn">Start New Payment</a></p>
+            </div>
+        <?php endif; ?>
+        
+        <p style="margin-top: 30px;"><a href="<?php echo $_SERVER['PHP_SELF']; ?>">← Start New Payment</a></p>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+// ============================================
+// DEFAULT: Payment Form (Main Page)
+// ============================================
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NekPayment Integration</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-top: 0; }
+        .info { 
+            background: #e8f4fd; 
+            padding: 15px; 
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .amount-limit {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn:hover {
+            background: #218838;
+        }
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .debug-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+        .debug-info strong {
+            color: #333;
+        }
+        .creds {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+        }
+        .note {
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 13px;
+            margin-top: 10px;
+            border-left: 4px solid #28a745;
+        }
+        .error-msg {
+            color: #dc3545;
+            font-size: 12px;
+            display: none;
+            margin-top: 5px;
+        }
+        .error-msg.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 NekPayment Integration</h1>
+        <p>Complete payment integration in one file.</p>
+        
+        <div class="amount-limit">
+            <strong>💳 Amount Limits:</strong><br>
+            Minimum: ₦<?php echo number_format(MIN_AMOUNT, 2); ?><br>
+            Maximum: ₦<?php echo number_format(MAX_AMOUNT, 2); ?>
+        </div>
+        
+        <div class="info">
+            <strong>Test Mode</strong><br>
+            Merchant ID: <?php echo MERCHANT_ID; ?><br>
+            Pay Type: <?php echo PAY_TYPE; ?><br>
+            <strong>Base URL:</strong> <?php echo BASE_URL; ?>
+        </div>
+        
+        <form method="POST" action="<?php echo $_SERVER['PHP_SELF']; ?>?action=pay" id="paymentForm" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="amount">Amount (₦)</label>
+                <input type="number" id="amount" name="amount" value="<?php echo MIN_AMOUNT; ?>" step="0.01" min="<?php echo MIN_AMOUNT; ?>" max="<?php echo MAX_AMOUNT; ?>" required>
+                <div id="amount-error" class="error-msg"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="product">Product Name</label>
+                <input type="text" id="product" name="product" value="Test Product" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="mch_return_msg">Reference / Pass-through (optional)</label>
+                <input type="text" id="mch_return_msg" name="mch_return_msg" value="order_<?php echo date('YmdHis'); ?>" placeholder="e.g., order_20260718">
+                <small style="color: #666;">Only letters, numbers, and underscores. Max 200 bytes.</small>
+            </div>
+            
+            <button type="submit" class="btn" id="payBtn">Pay Now</button>
+        </form>
+        
+        <div class="debug-info">
+            <strong>Debug Info:</strong><br>
+            <strong>Base URL:</strong> <?php echo htmlspecialchars(BASE_URL); ?><br>
+            <strong>Notify URL:</strong> <?php echo htmlspecialchars(getCurrentUrl('notify')); ?><br>
+            <strong>Page URL:</strong> <?php echo htmlspecialchars(getCurrentUrl('success', ['order' => 'ORDER_XXX'])); ?>
+        </div>
+        
+        <div class="creds">
+            <strong>Recent Orders:</strong><br>
+            <?php
+            $orders = file_exists('orders.json') ? json_decode(file_get_contents('orders.json'), true) : [];
+            if ($orders) {
+                $latest = array_slice($orders, -5, 5, true);
+                echo '<ul style="margin:5px 0; padding-left:20px;">';
+                foreach ($latest as $orderNo => $order) {
+                    $status = $order['status'] ?? 'unknown';
+                    $color = $status === 'paid' ? 'green' : ($status === 'pending' ? 'orange' : 'gray');
+                    $ref = isset($order['mch_return_msg']) ? ' (' . $order['mch_return_msg'] . ')' : '';
+                    echo "<li><strong>{$orderNo}</strong> - ₦" . number_format($order['amount'] ?? 0, 2) . " - <span style='color:{$color};'>{$status}</span>{$ref}</li>";
+                }
+                echo '</ul>';
+            } else {
+                echo 'No orders yet.';
+            }
+            ?>
+        </div>
+    </div>
+    
+    <script>
+        function validateForm() {
+            const amount = document.getElementById('amount');
+            const errorDiv = document.getElementById('amount-error');
+            const min = <?php echo MIN_AMOUNT; ?>;
+            const max = <?php echo MAX_AMOUNT; ?>;
+            const val = parseFloat(amount.value);
+            
+            if (isNaN(val) || val < min) {
+                errorDiv.textContent = 'Amount must be at least ₦' + min.toFixed(2);
+                errorDiv.className = 'error-msg show';
+                amount.focus();
+                return false;
+            }
+            
+            if (val > max) {
+                errorDiv.textContent = 'Amount cannot exceed ₦' + max.toFixed(2);
+                errorDiv.className = 'error-msg show';
+                amount.focus();
+                return false;
+            }
+            
+            errorDiv.className = 'error-msg';
+            
+            const btn = document.getElementById('payBtn');
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+            
+            return true;
+        }
+    </script>
+</body>
+</html>
+<?php
+// ============================================
+// END OF FILE
+// ============================================
+?>

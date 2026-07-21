@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSSAnimation.io - Complete Animation Library Demo</title>
+    <link rel="stylesheet" href="cssanimation.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 40px;
+            opacity: 0.8;
+        }
+        
+        .category {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .category h2 {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: inline-block;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .animation-card {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .animation-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .animation-preview {
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .animation-name {
+            font-family: monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            color: #ccc;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .controls button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+        
+        .note {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .note code {
+            background: #667eea;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 CSSAnimation.io Library</h1>
+        <div class="subtitle">Complete animation collection • Click any card to replay animation</div>
+        
+        <div class="controls">
+            <button onclick="restartAllAnimations()">▶ Restart All Animations</button>
+            <button onclick="playRandomAnimation()">🎲 Random Animation</button>
+        </div>
+        
+        <!-- Fade Animations -->
+        <div class="category">
+            <h2>🌊 Fade Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-fadeIn">Fade In</div>
+                    <div class="animation-name">ca__fx-fadeIn</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-fadeInLeft">Fade In Left</div>
+                    <div class="animation-name">ca__fx-fadeInLeft</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-fadeInRight">Fade In Right</div>
+                    <div class="animation-name">ca__fx-fadeInRight</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-fadeInTop">Fade In Top</div>
+                    <div class="animation-name">ca__fx-fadeInTop</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-fadeInBottom">Fade In Bottom</div>
+                    <div class="animation-name">ca__fx-fadeInBottom</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Blur Effects -->
+        <div class="category">
+            <h2>🌀 Blur Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-blurIn">Blur In</div>
+                    <div class="animation-name">ca__fx-blurIn</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-blurInfromLeft">Blur From Left</div>
+                    <div class="animation-name">ca__fx-blurInfromLeft</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-blurInFromRight">Blur From Right</div>
+                    <div class="animation-name">ca__fx-blurInFromRight</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-blurInFromTop">Blur From Top</div>
+                    <div class="animation-name">ca__fx-blurInFromTop</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-blurInFromBottom">Blur From Bottom</div>
+                    <div class="animation-name">ca__fx-blurInFromBottom</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bounce Effects -->
+        <div class="category">
+            <h2>🏀 Bounce Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-bounceX">Bounce X</div>
+                    <div class="animation-name">ca__fx-bounceX</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-bounceY">Bounce Y</div>
+                    <div class="animation-name">ca__fx-bounceY</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-spring">Spring</div>
+                    <div class="animation-name">ca__fx-spring</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-boing">Boing</div>
+                    <div class="animation-name">ca__fx-boing</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-hop">Hop</div>
+                    <div class="animation-name">ca__fx-hop</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-jump">Jump</div>
+                    <div class="animation-name">ca__fx-jump</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-bounceInTop">Bounce In Top</div>
+                    <div class="animation-name">ca__fx-bounceInTop</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-bounceInBottom">Bounce In Bottom</div>
+                    <div class="animation-name">ca__fx-bounceInBottom</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-bounceInLeft">Bounce In Left</div>
+                    <div class="animation-name">ca__fx-bounceInLeft</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-bounceInRight">Bounce In Right</div>
+                    <div class="animation-name">ca__fx-bounceInRight</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Flip & 3D Effects -->
+        <div class="category">
+            <h2>🔄 Flip & 3D Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-flipX">Flip X</div>
+                    <div class="animation-name">ca__fx-flipX</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-flipY">Flip Y</div>
+                    <div class="animation-name">ca__fx-flipY</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-flipXZoomIn">Flip X Zoom In</div>
+                    <div class="animation-name">ca__fx-flipXZoomIn</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-flipYZoomIn">Flip Y Zoom In</div>
+                    <div class="animation-name">ca__fx-flipYZoomIn</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-flipTwistRight">Flip Twist Right</div>
+                    <div class="animation-name">ca__fx-flipTwistRight</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-flipTwistLeft">Flip Twist Left</div>
+                    <div class="animation-name">ca__fx-flipTwistLeft</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Zoom Effects -->
+        <div class="category">
+            <h2>🔍 Zoom Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-zoomIn">Zoom In</div>
+                    <div class="animation-name">ca__fx-zoomIn</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-zoomInLeft">Zoom In Left</div>
+                    <div class="animation-name">ca__fx-zoomInLeft</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-zoomInRight">Zoom In Right</div>
+                    <div class="animation-name">ca__fx-zoomInRight</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-zoomInTop">Zoom In Top</div>
+                    <div class="animation-name">ca__fx-zoomInTop</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-zoomInBottom">Zoom In Bottom</div>
+                    <div class="animation-name">ca__fx-zoomInBottom</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-bounceZoomIn">Bounce Zoom In</div>
+                    <div class="animation-name">ca__fx-bounceZoomIn</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Shake & Jiggle Effects -->
+        <div class="category">
+            <h2>📳 Shake & Jiggle</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-jiggle">Jiggle</div>
+                    <div class="animation-name">ca__fx-jiggle</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-quiver">Quiver</div>
+                    <div class="animation-name">ca__fx-quiver</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-tremor">Tremor</div>
+                    <div class="animation-name">ca__fx-tremor</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-wiggle">Wiggle</div>
+                    <div class="animation-name">ca__fx-wiggle</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-rattle">Rattle</div>
+                    <div class="animation-name">ca__fx-rattle</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-horizontalShake">Horizontal Shake</div>
+                    <div class="animation-name">ca__fx-horizontalShake</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-verticalShake">Vertical Shake</div>
+                    <div class="animation-name">ca__fx-verticalShake</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Glitch Effects -->
+        <div class="category">
+            <h2>📺 Glitch Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-microGlitch">Micro Glitch</div>
+                    <div class="animation-name">ca__fx-microGlitch</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-glitchPopIn">Glitch Pop In</div>
+                    <div class="animation-name">ca__fx-glitchPopIn</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-glitchJitter">Glitch Jitter</div>
+                    <div class="animation-name">ca__fx-glitchJitter</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-glitchSlice">Glitch Slice</div>
+                    <div class="animation-name">ca__fx-glitchSlice</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-glitchFlash">Glitch Flash</div>
+                    <div class="animation-name">ca__fx-glitchFlash</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Swing Effects -->
+        <div class="category">
+            <h2>🎯 Swing Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-swing">Swing</div>
+                    <div class="animation-name">ca__fx-swing</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-swingIn">Swing In</div>
+                    <div class="animation-name">ca__fx-swingIn</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-swingUp">Swing Up</div>
+                    <div class="animation-name">ca__fx-swingUp</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-swingZoom">Swing Zoom</div>
+                    <div class="animation-name">ca__fx-swingZoom</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-swingPop">Swing Pop</div>
+                    <div class="animation-name">ca__fx-swingPop</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Elastic & Rubber Effects -->
+        <div class="category">
+            <h2>💪 Elastic & Rubber</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-elasticRise">Elastic Rise</div>
+                    <div class="animation-name">ca__fx-elasticRise</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-elasticBounce">Elastic Bounce</div>
+                    <div class="animation-name">ca__fx-elasticBounce</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-rubber">Rubber</div>
+                    <div class="animation-name">ca__fx-rubber</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-jelly">Jelly</div>
+                    <div class="animation-name">ca__fx-jelly</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-jello">Jello</div>
+                    <div class="animation-name">ca__fx-jello</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mask Effects -->
+        <div class="category">
+            <h2>🎭 Mask Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-mask-wipeInLeft">Mask Wipe Left</div>
+                    <div class="animation-name">ca__fx-mask-wipeInLeft</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-mask-wipeInRight">Mask Wipe Right</div>
+                    <div class="animation-name">ca__fx-mask-wipeInRight</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-mask-wipeInTop">Mask Wipe Top</div>
+                    <div class="animation-name">ca__fx-mask-wipeInTop</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-mask-wipeInBottom">Mask Wipe Bottom</div>
+                    <div class="animation-name">ca__fx-mask-wipeInBottom</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Special Effects -->
+        <div class="category">
+            <h2>✨ Special Effects</h2>
+            <div class="grid">
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-heartbeatSlow">Heartbeat Slow</div>
+                    <div class="animation-name">ca__fx-heartbeatSlow</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-heartbeatFast">Heartbeat Fast</div>
+                    <div class="animation-name">ca__fx-heartbeatFast</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-neonGlow">Neon Glow</div>
+                    <div class="animation-name">ca__fx-neonGlow</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-colorPulse">Color Pulse</div>
+                    <div class="animation-name">ca__fx-colorPulse</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-lightning">Lightning</div>
+                    <div class="animation-name">ca__fx-lightning</div>
+                </div>
+                <div class="animation-card" onclick="replayAnimation(this)">
+                    <div class="animation-preview cssanimation ca__fx-tada">Tada Effect</div>
+                    <div class="animation-name">ca__fx-tada</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="note">
+            <strong>💡 How to use:</strong><br>
+            Add <code>class="cssanimation ca__fx-[effect-name]"</code> to any element.<br>
+            Example: <code>&lt;div class="cssanimation ca__fx-fadeIn"&gt;Hello&lt;/div&gt;</code><br>
+            <strong>Click any card</strong> to replay its animation!
+        </div>
+    </div>
+    
+    <script>
+        // Replay animation on a specific card
+        function replayAnimation(card) {
+            const preview = card.querySelector('.animation-preview');
+            const classes = Array.from(preview.classList);
+            const effectClass = classes.find(c => c.startsWith('ca__fx-'));
+            
+            if (effectClass) {
+                preview.classList.remove(effectClass);
+                void preview.offsetWidth; // Force reflow
+                preview.classList.add(effectClass);
+            }
+        }
+        
+        // Restart all animations on the page
+        function restartAllAnimations() {
+            const previews = document.querySelectorAll('.animation-preview');
+            previews.forEach(preview => {
+                const classes = Array.from(preview.classList);
+                const effectClass = classes.find(c => c.startsWith('ca__fx-'));
+                if (effectClass) {
+                    preview.classList.remove(effectClass);
+                    void preview.offsetWidth;
+                    preview.classList.add(effectClass);
+                }
+            });
+        }
+        
+        // Play a random animation
+        function playRandomAnimation() {
+            const allCards = document.querySelectorAll('.animation-card');
+            const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
+            replayAnimation(randomCard);
+            randomCard.style.animation = 'pulse 0.3s ease';
+            setTimeout(() => {
+                randomCard.style.animation = '';
+            }, 300);
+            randomCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        // Auto-play all animations on load
+        setTimeout(() => {
+            restartAllAnimations();
+        }, 100);
+        
+        console.log('CSSAnimation.io Library Demo Loaded!');
+        console.log('All animation classes start with "ca__fx-" prefix');
+    </script>
+</body>
+</html>
