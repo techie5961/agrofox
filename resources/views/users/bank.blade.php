@@ -54,7 +54,7 @@
             <form method="POST" action="{{ url('users/post/add/bank/process') }}" x-on:submit="PostRequest(event,$el,function(response){
                 let data=JSON.parse(response);
                 if(data.status == 'success'){
-                    Vitecss.navigate('{{ url()->current() }}');
+                    Vitecss.navigate('{{ $next ? url('users/withdraw') : url()->current() }}');
                 
                 }
             })" class="analytics p-20px w-full br-10px max-w-500 m-x-auto bg-light column g-10">

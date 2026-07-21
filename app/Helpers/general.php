@@ -6,7 +6,7 @@ function Wallets(){
   $wallets= [
     [
         'key' => 'main_balance',
-        'name' => 'Main Wallet',
+        'name' => 'Withdrawal Wallet',
         'class' => 'general'
     
     ],

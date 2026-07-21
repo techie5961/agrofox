@@ -100,7 +100,7 @@ class UserDashboardController extends Controller
      
         return view('users.bank',[
             'banks' => $banks,
-            'next' => request('next') ?? 'null'
+            'next' => request('next') ?? null
         ]);
     }
 

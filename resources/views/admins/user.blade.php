@@ -74,7 +74,7 @@
                         </div>
                         {{-- new column --}}
                         <div class="column g-3">
-                            <strong class="font-weight-600 font-size-1">{{ $data->username }}</strong>
+                            <strong class="font-weight-900 font-size-1">{{ $data->username }}</strong>
                           {{-- new row --}}
                             <div class="w-full row opacity-07 align-center g-2">
                                 <svg viewBox="0 0 24 24" fill="CurrentColor" xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3ZM12.0606 11.6829L5.64722 6.2377L4.35278 7.7623L12.0731 14.3171L19.6544 7.75616L18.3456 6.24384L12.0606 11.6829Z"></path></svg>
@@ -95,11 +95,11 @@
                     <div class="row w-full g-10 align-center">
                         <div style="" class="balance-div">
                             <small>Main Balance</small>
-                            <strong style="max-width:100%;" class="ws-nowrap block text-overflow-ellipsis font-size-1">{{ $data->currency.number_format($data->main_balance,2) }}</strong>
+                            <strong style="max-width:100%;" class="ws-nowrap font-weight-900 block text-overflow-ellipsis font-size-1">{{ $data->currency.number_format($data->main_balance,2) }}</strong>
                         </div>
                         <div class="balance-div">
                             <small>Deposit balance</small>
-                            <strong style="max-width:100%;" class="ws-nowrap block text-overflow-ellipsis font-size-1">{{ $data->currency.number_format($data->deposit_balance,2) }}</strong>
+                            <strong style="max-width:100%;" class="ws-nowrap font-weight-900 block text-overflow-ellipsis font-size-1">{{ $data->currency.number_format($data->deposit_balance,2) }}</strong>
                         </div>
                     </div>
                     <hr>
