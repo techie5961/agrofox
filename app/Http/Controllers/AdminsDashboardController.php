@@ -305,4 +305,29 @@ class AdminsDashboardController extends Controller
     public function LoginSettings(){
         return view('admins.loginsettings');
     }
+    
+    // add salary
+    public function AddSalary(){
+        return view('admins.salary.add');
+    }
+
+     // edit salary
+    public function EditSalary(){
+        return view('admins.salary.edit',[
+            'salary' => DB::table('salary')->where('id',request('id'))->first()
+        ]);
+    }
+
+    // manage salary
+    public function ManageSalary(){
+        $salary=DB::table('salary')->orderBy('date','desc')->paginate(10);
+        $salary->getCollection()->transform(function($each){
+            $each->added=Carbon::parse($each->date)->diffForHumans();
+            return $each;
+        });
+       return view('admins.salary.manage',[
+        'total' => DB::table('salary')->count(),
+        'salary' => $salary
+       ]);
+    }
 }

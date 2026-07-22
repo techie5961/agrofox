@@ -481,4 +481,58 @@ class AdminsPostRequestController extends Controller
         }
        
     }
+
+    // create salary
+    public function CreateSalary(){
+        request()->merge(array_map('trim',request()->all()));
+        $validator=Validator::make(request()->all(),[
+            'referrals' => 'required|numeric|min:1|regex:/^[0-9]+$/',
+            'reward' => 'required|numeric|min:1|regex:/^[0-9]+$/'
+        ]);
+        if($validator->fails()){
+            return response()->json([
+                'message' => $validator->errors()->first(),
+                'status' => 'error'
+            ]);
+        }
+
+        DB::table('salary')->insert([
+            'uniqid' => GenerateID(),
+            'referrals' => request('referrals'),
+            'reward' => request('reward'),
+            'completed' => 0,
+            'status' => 'active',
+            'updated' => Carbon::now(),
+            'date' => Carbon::now()
+        ]);
+        return response()->json([
+            'message' => 'Salary created successfully',
+            'status' => 'success'
+        ]);
+    }
+
+    //  edit salary
+    public function EditSalary(){
+           request()->merge(array_map('trim',request()->all()));
+        $validator=Validator::make(request()->all(),[
+            'id' => 'required|regex:/^[0-9]+$/',
+            'referrals' => 'required|numeric|min:1|regex:/^[0-9]+$/',
+            'reward' => 'required|numeric|min:1|regex:/^[0-9]+$/'
+        ]);
+        if($validator->fails()){
+            return response()->json([
+                'message' => $validator->errors()->first(),
+                'status' => 'error'
+            ]);
+        }
+         DB::table('salary')->where('id',request('id'))->update([
+            'referrals' => request('referrals'),
+            'reward' => request('reward'),
+            'updated' => Carbon::now(),
+        ]);
+        return response()->json([
+            'message' => 'Salary editted successfully',
+            'status' => 'success'
+        ]);
+    }
 }

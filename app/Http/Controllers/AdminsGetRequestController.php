@@ -233,6 +233,12 @@ public function SearchUsers(){
         return redirect(url()->previous());
     }
 
+    // salary delete
+    public function salaryDelete(){
+        DB::table('salary')->where('id',request('id'))->delete();
+        return redirect()->back();
+    }
+
 
 
 }

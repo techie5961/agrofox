@@ -399,14 +399,13 @@ class UsersPostRequestController extends Controller
         // ]);
         request()->merge(array_map('trim',request()->all()));
         $validator=Validator::make(request()->all(),[
-            'account_number' => 'required|integer|digits:10',
+            'account_number' => 'required|regex:/^[0-9]{10}$/',
             'account_name' => 'required|string|min:2|max:255',
             'bank_name' => 'required|string|min:2',
             'bank_code' => 'required|string'
         ],[
             'account_number.required' => 'Account number is required and cannot be empty',
-            'account_number.integer' => 'Account number must only consist of numbers',
-            'account_number.digits' => 'Account number must be 10 digits',
+            'account_number.regex' => 'Please enter a valid 10 digits account number',
             'account_name.required' => 'Account name is required and cannot be empty',
             'account_name.string' => 'Account name must be a string',
             'account_name.min' => 'Invalid account name',

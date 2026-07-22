@@ -149,5 +149,18 @@ class UserDashboardController extends Controller
         ]);
     }
 
+    // salary
+    public function Salary(){
+        $salary=DB::table('salary')->orderBy('referrals','asc')->limit(50)->get();
+        $salary->transform(function($each){
+            $each->earned=DB::table('salaries')->where('user_id',Auth::guard('users')->user()->id)->where('salary->id',$each->id)->exists() ? 1 : 0;
+            return $each;
+        });
+        return view('users.salary',[
+            'salary' => $salary,
+            'ref' => DB::table('users')->where('ref',Auth::guard('users')->user()->id)->count()
+        ]);
+    }
+
     
 }

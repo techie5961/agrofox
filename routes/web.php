@@ -151,6 +151,14 @@ Route::middleware([UsersDashboardMiddleware::class])->group(function(){
     Route::get('users/dashboard/switch/currency',[
         UserGetRequestController::class,'SwitchCurrency'
     ]);
+    // salary
+    Route::get('users/salary',[
+        UserDashboardController::class,'Salary'
+    ]);
+    // claim salary
+    Route::get('users/get/claim/salary',[
+        UserGetRequestController::class,'Claimsalary'
+    ]);
    
 
     // users post request(authenticated)
@@ -244,6 +252,22 @@ Route::get('admins/users',[
 // search users
 Route::get('admins/search/users',[
     AdminsGetRequestController::class,'SearchUsers'
+]);
+// salary
+Route::get('admins/salary/add',[
+    AdminsDashboardController::class,'AddSalary'
+]);
+// manage salary
+Route::get('admins/salary/manage',[
+    AdminsDashboardController::class,'Managesalary'
+]);
+// delet salary
+Route::get('admins/salary/delete',[
+    AdminsGetRequestController::class,'salaryDelete'
+]);
+// edit salary
+Route::get('admins/salary/edit',[
+    AdminsDashboardController::class,'EditSalary'
 ]);
 
 // user
@@ -389,6 +413,14 @@ Route::post('admins/post/debit/all/promoters/process',[
 // update login password
 Route::post('admins/post/login/settings/process',[
     AdminsPostRequestController::class,'LoginSettings'
+]);
+// create salary
+Route::post('admins/post/add/salary/task/process',[
+    AdminsPostRequestController::class,'CreateSalary'
+]);
+// edit salary
+Route::post('admins/post/edit/salary/task/process',[
+    AdminsPostRequestController::class,'EditSalary'
 ]);
 
 

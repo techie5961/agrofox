@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class DBController extends Controller
 {
@@ -22,6 +24,7 @@ class DBController extends Controller
             $table->string('status')->default('active');
             $table->timestamp('updated')->useCurrent();
             $table->timestamp('date')->useCurrent();
+            
         });
     }
 
