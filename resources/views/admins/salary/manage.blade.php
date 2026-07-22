@@ -66,9 +66,8 @@
                     {{-- new row --}}
                     <div class="hr" vitecss-type="dashed"></div>
                     <div class="row align-center flex-wrap g-10px space-between">
-                        <button class="btn-green">View completions</button>
+                        <button x-on:click="window.location.href='{{ url('admins/salary/edit?id='.$data->id.'') }}'" class="btn-green">Edit salary</button>
                         <button x-on:click="Modal = true;Link = '{{ url('admins/salary/delete?id='.$data->id.'') }}';" class="btn-red">Delete salary</button>
-                        <button x-on:click="window.location.href='{{ url('admins/salary/edit?id='.$data->id.'') }}'" class="btn-primary br-5 clip-5">Edit salary</button>
                     </div>
                 </div>
             @endforeach
