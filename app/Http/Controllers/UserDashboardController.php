@@ -136,7 +136,7 @@ class UserDashboardController extends Controller
 
     // referrals
     public function Referrals(){
-        $referrals=DB::table('users')->where('ref',Auth::guard('users')->user()->id)->orderBy('date','desc')->paginate(2);
+        $referrals=DB::table('users')->where('ref',Auth::guard('users')->user()->id)->orderBy('date','desc')->paginate(10);
         $referrals->getCollection()->transform(function($each){
             $each->invested=DB::table('purchased_packages')->where('user_id',$each->id)->sum('package->cost');
             $each->commission=DB::table('transactions')->where('type','referral_commission')->where('user_id',$each->id)->where('status','success')->sum('amount');
@@ -156,9 +156,12 @@ class UserDashboardController extends Controller
             $each->earned=DB::table('salaries')->where('user_id',Auth::guard('users')->user()->id)->where('salary->id',$each->id)->exists() ? 1 : 0;
             return $each;
         });
+       
         return view('users.salary',[
             'salary' => $salary,
-            'ref' => DB::table('users')->where('ref',Auth::guard('users')->user()->id)->count()
+            'ref' => DB::table('users')->where('ref',Auth::guard('users')->user()->id)->whereIn('id',function($q){
+                $q->select('user_id')->from('purchased_packages')->distinct();
+            })->count()
         ]);
     }
 
