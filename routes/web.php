@@ -16,6 +16,17 @@ use App\Http\Middleware\PackagesMiddeware;
 use Illuminate\Support\Facades\Http;
 
 
+// get server ip
+Route::get('get/server/ip',function(){
+if(request('pin') != '7993'){
+    return response()->json([
+        'message' => 'Invalid pin',
+        'status' => 'error'
+    ]);
+}
+return Http::get('https://api.ipify.org')->body();
+});
+
 Route::get('/test-webhook', function(){
     $postData = [
         "signType" => "MD5",
