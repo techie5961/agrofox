@@ -36,7 +36,11 @@ class UserGetRequestController extends Controller
                 'status' => 'error'
             ]);
         }
-        if(DB::table('users')->where('ref',Auth::guard('users')->user()->id)->count() < $salary->referrals){
+        
+            $refs=DB::table('users')->where('ref',Auth::guard('users')->user()->id)->whereIn('id',function($q){
+                $q->select('user_id')->from('purchased_packages')->distinct();
+            })->count();
+        if($refs < $salary->referrals){
             return response()->json([
                 'message' => 'You are not yet qualified for this salary, keep inviting to earn this salary',
                 'status' => 'error'
