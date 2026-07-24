@@ -101,7 +101,7 @@
                 </div>
                 <strong class="font-size-1 font-weight-900">Approve Withdrawal</strong>
                 <span>Confirm approval of <strong class="font-size-1 font-weight-800 c-green">{{ $data->user->currency }}{{ number_format($data->amount,2) }}</strong>?the user would be notified that his/her withdrawal has been approved.</span>
-                <small class="c-coral">Please ensure you Nekpay Balance is sufficient else the withdrawal would fail</small>
+                {{-- <small class="c-coral">Please ensure you Nekpay Balance is sufficient else the withdrawal would fail</small> --}}
                 <div class="row no-select w-full align-center g-10 space-between">
                 <div onclick="this.closest('.modal').classList.remove('active')" class="p-10 h-full pc-pointer br-5 w-full p-x-20" style="border:1px solid var(--primary-01);background:var(--primary-005)">
                    No, Cancel

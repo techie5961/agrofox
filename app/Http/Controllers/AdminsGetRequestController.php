@@ -119,7 +119,6 @@ $params['sign'] = $generateSignature($params);
 // Send to NekPay
 $response = Http::asForm()->post('https://api.nekpayment.com/pay/transfer', $params);
 $data = json_decode(json_encode($response->json()));
-return $data;
 $json_data=json_decode($trx->json);
 $json_data->api_response=$data;
 if($data->respCode == 'SUCCESS'){

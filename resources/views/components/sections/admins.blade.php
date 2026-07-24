@@ -108,6 +108,59 @@
 .c-blue{
     color:blue;
 }
-     
+    
+  
+/* modal */
+.modal{
+    position: fixed;
+    top:0;
+    left:0;
+    bottom:0;
+    right:0;
+    background:rgba(0,0,0,0.4);
+    z-index:4000;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    display:none;
+
+
+}
+body:has(.modal.active){
+    overflow:hidden !important;
+}
+.modal.active{
+    display:flex;
+}
+.modal.active > .child{
+    animation:animate-up 0.5s linear forwards;
+    overflow:auto;
+}
+@keyframes animate-up{
+    0%{
+        transform:translateY(30px);
+        opacity:0;
+    }
+    100%{
+        transform:translateY(0);
+        opacity:1;
+    }
+}
+.modal > .child{
+    border-radius:10px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    background:var(--bg-light);
+    padding:20px;
+    width:80%;
+    max-width:500px;
+    border:1px solid rgba(255,255,255,0.5);
+    box-shadow:0 0px 10px rgba(0,0,0,0.3);
+
+}
+
     </style>
 @endisset
